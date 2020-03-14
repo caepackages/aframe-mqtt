@@ -1,0 +1,21 @@
+{
+  "name": "aframe-mqtt",
+  "version": "1.0.0",
+  "description": "aframe-mqtt",
+  "main": "index.js",
+  "scripts": {
+  },
+  "repository": "caepackages/aframe-mqtt",
+  "keywords": [
+  ],
+  "author": "Frank Rettig <frankmrettig@gmail.com>",
+  "license": "LicenseRef-LICENSE",
+  "bugs": {
+  },
+  "dependencies": {
+    "mqtt" : "latest",
+    "aframe" : "latest"
+  },
+  "devDependencies": {
+  }
+}
