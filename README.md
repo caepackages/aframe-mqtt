@@ -59,9 +59,8 @@ derived from animation component
 
 ## local mqtt-broker
 
-```
 <a href="http://www.mosquitto.org/">mosquitto.org</a>
-
+```
 mosquito –v –c mosquitto.conf
 ```
 
