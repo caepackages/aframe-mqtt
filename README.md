@@ -57,7 +57,7 @@ derived from animation component
 </html>
 ```
 
-## local mqtt-broker
+## local mqtt broker
 
 <a href="http://www.mosquitto.org/">mosquitto.org</a>
 ```
