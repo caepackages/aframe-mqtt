@@ -61,7 +61,7 @@ derived from animation component
 
 <a href="http://www.mosquitto.org/">mosquitto.org</a>
 ```
-mosquito –v –c mosquitto.conf
+mosquitto –v –c mosquitto.conf
 ```
 
 ## mosquitto.conf
