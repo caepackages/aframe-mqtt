@@ -8,20 +8,21 @@ if (typeof AFRAME === 'undefined') {
 
 AFRAME.registerComponent('removeanimation', {
   multiple: true,
-  init: function () {
-    this.el.addEventListener('animationcomplete', (evt) => {
-		var name = 'animation';
-		if (this.id) {
-			name += '__' + this.id;
-		}
+  events: {'animationcomplete' : function (evt) {
+	var name = 'animation';
+	if (this.id) {
+		name += '__' + this.id;
+	}
 		
-		if (name === evt.detail.name) {
-			this.el.removeAttribute(name);
-			this.el.removeAttribute(this.attrName);
-		}
-    });
-  }
-});  
+	if (name === evt.detail.name) {
+		this.el.removeAttribute(name);
+		this.el.removeAttribute(this.attrName);
+	}
+	}},
+		
+	init: function () {
+	  }
+});   
 
 AFRAME.registerComponent('mqtt-subscribe', {
   schema: {
