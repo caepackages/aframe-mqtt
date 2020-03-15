@@ -19,7 +19,7 @@ browserify main.js -o bundle.js
 
 ## Properties
 ```
-see animation component
+derived from animation component
 ```
 
 ## Example 1: Set HTML Attributes
