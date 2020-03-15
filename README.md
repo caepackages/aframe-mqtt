@@ -17,6 +17,11 @@ require('aframe-mqtt');
 browserify main.js -o bundle.js
 ```
 
+## Properties
+```
+see animation component
+```
+
 ## Example 1: Set HTML Attributes
 
 ```html
@@ -26,7 +31,7 @@ browserify main.js -o bundle.js
   </head>
   <body>
     <a-scene>
-	  <!-- default broker: test.mosquitto.org:8081 -->
+      <!-- default broker: test.mosquitto.org:8081 -->
       <a-box position = "0 0 0" scale = "1 1 1"
 		mqtt-subscribe__pos = "topic:atest;property:position;dur:2000"
 		mqtt-subscribe__size = "topic:atest;property:scale;dur:1000"		
