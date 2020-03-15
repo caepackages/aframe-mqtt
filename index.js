@@ -6,6 +6,23 @@ if (typeof AFRAME === 'undefined') {
   throw new Error('Component attempted to register before AFRAME was available.');
 }
 
+AFRAME.registerComponent('removeanimation', {
+  multiple: true,
+  init: function () {
+    this.el.addEventListener('animationcomplete', (evt) => {
+		var name = 'animation';
+		if (this.id) {
+			name += '__' + this.id;
+		}
+		
+		if (name === evt.detail.name) {
+			this.el.removeAttribute(name);
+			this.el.removeAttribute(this.attrName);
+		}
+    });
+  }
+});  
+
 AFRAME.registerComponent('mqtt-subscribe', {
   schema: {
       broker: { default: 'mqtt://test.mosquitto.org:8081' },
