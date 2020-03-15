@@ -80,3 +80,8 @@ broker_ip (e.g. 192.168.178.92)
 host = broker_ip
 port = 1883
 ```
+
+## License
+```
+(c) Copyright 2020 Frank Rettig, all rights reserved.
+```
