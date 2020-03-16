@@ -8,6 +8,7 @@ npm i aframe-mqtt
 
 ```javascript
 // main.js
+require('aframe');
 require('aframe-mqtt');
 ```
 
