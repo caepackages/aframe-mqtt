@@ -13,8 +13,7 @@
   "bugs": {
   },
   "dependencies": {
-    "mqtt" : "latest",
-    "aframe" : "latest"
+    "mqtt" : "latest"
   },
   "devDependencies": {
   }
