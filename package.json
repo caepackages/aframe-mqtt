@@ -1,6 +1,6 @@
 {
   "name": "aframe-mqtt",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "aframe-mqtt",
   "main": "index.js",
   "scripts": {
