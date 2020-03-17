@@ -6,6 +6,26 @@ if (typeof AFRAME === 'undefined') {
   throw new Error('Component attempted to register before AFRAME was available.');
 }
 
+AFRAME.registerComponent('mqtt-event-message', {
+	schema: {
+		event: {type: 'string', default: 'click'},
+			message: {type: 'string', default: 'ON'},
+			broker: {type: 'string', default: 'mqtt://127.0.0.1:8081'},
+			topic: {type: 'string', default: 'cmnd/delock/power'},
+		  },
+
+		multiple: true,
+
+		update: function (oldData) {
+			this.events[this.data.event] = (event) => {
+				var attrVal = 'broker:' + this.data.broker + ';topic:' + this.data.topic + ';autoRemove:true;message:' + this.data.message
+				var uid = Math.round(Math.random() * 1e9)
+				this.el.setAttribute('mqtt-publish__' + uid, attrVal );
+			}
+		}
+	}
+)
+
 AFRAME.registerComponent('removeanimation', {
   multiple: true,
   events: {'animationcomplete' : function (evt) {
@@ -19,9 +39,6 @@ AFRAME.registerComponent('removeanimation', {
 		this.el.removeAttribute(this.attrName);
 	}
 	}},
-		
-	init: function () {
-	  }
 });   
 
 AFRAME.registerComponent('mqtt-subscribe', {
@@ -74,18 +91,22 @@ AFRAME.registerComponent('mqtt-subscribe', {
 	}
 	
 	var attributeName = 'animation__mqtt';
+	var removeanimationName = 'removeanimation__mqtt';
 	if (this.id !== undefined) {
       attributeName += this.id;
+      removeanimationName += this.id;
 	}
 
 	if (this.data.selector.length > 0) {
 		var elmts = document.querySelectorAll(this.data.selector);
 		for (var i = 0; i < elmts.length; ++i) {
-		  elmts[i].removeAttribute(attributeName);  
+		  elmts[i].removeAttribute(attributeName);
+		  elmts[i].setAttribute(removeanimationName, '');
 		  elmts[i].setAttribute(attributeName, val);
 		}
 	} else {
 		this.el.removeAttribute(attributeName);
+		this.el.setAttribute(removeanimationName, '');
 		this.el.setAttribute(attributeName, val);
 	}
   },
@@ -131,7 +152,9 @@ AFRAME.registerComponent('mqtt-publish', {
   schema: {
       broker: { default: 'mqtt://test.mosquitto.org:8081' },
       topic: { default: 'topic' },
-      message: { default: '' },  
+      message: { default: '' },
+	  active: { default: true },
+	  autoRemove: { default: false }
     },
 
   multiple: true,  
@@ -153,19 +176,27 @@ AFRAME.registerComponent('mqtt-publish', {
   },
   
   update: function (oldData) {
-	if (Object.keys(oldData).length > 0) {
-		this.client.publish(this.data.topic, this.data.message);
+	if (Object.keys(oldData).length > 0 && this.data.active === true) {
+		if (this.data.autoRemove === true ) {
+			this.client.publish(this.data.topic, this.data.message, () => { this.el.removeAttribute(this.attrName) });
+		} else {
+			this.client.publish( this.data.topic, this.data.message );
+		}
 	}
   },
   
-  onConnect: function () {
-	if (this.data.message.length > 0) {
-	  this.client.publish(this.data.topic, this.data.message);
+  onConnect: function (evt) {
+	if (this.data.active === true) {
+		if (this.data.autoRemove === true ) {
+			this.client.publish(this.data.topic, this.data.message, () => { this.el.removeAttribute(this.attrName) });
+		} else {
+			this.client.publish( this.data.topic, this.data.message );
+		}
 	}
   },  
   
   remove: function () {
 	this.client.removeAllListeners();
-	this.client.end(true);
+	this.client.end(false);
   }
 });
