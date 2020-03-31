@@ -12,13 +12,19 @@ AFRAME.registerComponent('mqtt-event-message', {
 			message: {type: 'string', default: 'ON'},
 			broker: {type: 'string', default: 'mqtt://127.0.0.1:8081'},
 			topic: {type: 'string', default: 'cmnd/delock/power'},
+			username: {type: 'string', default: ''},
+			password: {type: 'string', default: ''}
 		  },
 
 		multiple: true,
 
 		update: function (oldData) {
 			this.events[this.data.event] = (event) => {
-				var attrVal = 'broker:' + this.data.broker + ';topic:' + this.data.topic + ';autoRemove:true;message:' + this.data.message
+				var attrVal = 'broker:' + this.data.broker + 
+				';topic:' + this.data.topic + 
+				';autoRemove:true;message:' + this.data.message +
+				';username:' + this.data.username + 
+				';password:' + this.data.password;
 				var uid = Math.round(Math.random() * 1e9)
 				this.el.setAttribute('mqtt-publish__' + uid, attrVal );
 			}
@@ -43,9 +49,12 @@ AFRAME.registerComponent('removeanimation', {
 
 AFRAME.registerComponent('mqtt-subscribe', {
   schema: {
-      broker: { default: 'mqtt://test.mosquitto.org:8081' },
+      broker: { default: 'mqtt://test.mosquitto.org:8081' },  
       selector: { default: '' },
+	  isStringProperty: {default: false},
       topic: { default: 'topic' },
+      username: {type: 'string', default: ''},
+      password: {type: 'string', default: ''}
     },
 
   multiple: true,
@@ -54,8 +63,8 @@ AFRAME.registerComponent('mqtt-subscribe', {
 	this.clientEvents = {};
 	this.clientEvents['connect'] = this.onConnect.bind(this);
 	this.clientEvents['message'] = this.message.bind(this);
-	this.client  = mqtt.connect(this.data.broker);
-	
+	this.client  = mqtt.connect( this.data.broker, {username: this.data.username, password: this.data.password});
+
 	for (var key in this.clientEvents) {
 		if (this.clientEvents.hasOwnProperty(key)) {
 			this.addClientListener(key);
@@ -79,35 +88,53 @@ AFRAME.registerComponent('mqtt-subscribe', {
   
   message: function (topic, message) {
 
-	var val = 'to:' + message.toString();
-	  
-	for (var prop in AFRAME.components.animation.schema) {
-		if (AFRAME.components.animation.schema.hasOwnProperty(prop)) {
-			if (['to', 'broker', 'selector', 'topic'].indexOf(prop) === -1) {
-				var stringifyFnc = AFRAME.components.animation.schema[prop]['stringify'];	
-				val += ";" + prop + ":" + stringifyFnc(this.data[prop]);
+	if (this.isStringProperty === true) {
+		var val = 'to:' + message.toString();
+		for (var prop in AFRAME.components.animation.schema) {
+			if (AFRAME.components.animation.schema.hasOwnProperty(prop)) {
+				if (['to', 'broker', 'selector', 'topic'].indexOf(prop) === -1) {
+					var stringifyFnc = AFRAME.components.animation.schema[prop]['stringify'];	
+					val += ";" + prop + ":" + stringifyFnc(this.data[prop]);
+				}
 			}
 		}
-	}
-	
-	var attributeName = 'animation__mqtt';
-	var removeanimationName = 'removeanimation__mqtt';
-	if (this.id !== undefined) {
-      attributeName += this.id;
-      removeanimationName += this.id;
-	}
+		
+		var attributeName = 'animation__mqtt';
+		var removeanimationName = 'removeanimation__mqtt';
+		if (this.id !== undefined) {
+		  attributeName += this.id;
+		  removeanimationName += this.id;
+		}
 
-	if (this.data.selector.length > 0) {
-		var elmts = document.querySelectorAll(this.data.selector);
-		for (var i = 0; i < elmts.length; ++i) {
-		  elmts[i].removeAttribute(attributeName);
-		  elmts[i].setAttribute(removeanimationName, '');
-		  elmts[i].setAttribute(attributeName, val);
+		if (this.data.selector.length > 0) {
+			var elmts = document.querySelectorAll(this.data.selector);
+			for (var i = 0; i < elmts.length; ++i) {
+			  elmts[i].removeAttribute(attributeName);
+			  elmts[i].setAttribute(removeanimationName, '');
+			  elmts[i].setAttribute(attributeName, val);
+			}
+		} else {
+			this.el.removeAttribute(attributeName);
+			this.el.setAttribute(removeanimationName, '');
+			this.el.setAttribute(attributeName, val);
 		}
 	} else {
-		this.el.removeAttribute(attributeName);
-		this.el.setAttribute(removeanimationName, '');
-		this.el.setAttribute(attributeName, val);
+		
+		// animation component property name
+		var propName = 'property'
+		if (this.data.hasOwnProperty('property')) {		
+			// no animation, directly set property (e.g. string values)
+			if (this.data.selector.length > 0) {
+				var elmts = document.querySelectorAll(this.data.selector);
+				for (var i = 0; i < elmts.length; ++i) {
+					AFRAME.utils.entity.setComponentProperty(elmts[i], this.data[propName], message.toString());
+				}
+			} else {
+					AFRAME.utils.entity.setComponentProperty(this.el, this.data[propName], message.toString());
+			}
+		} else {
+			console.log("failed to property in schema: " + propName)
+		}
 	}
   },
   
@@ -118,8 +145,7 @@ AFRAME.registerComponent('mqtt-subscribe', {
 		this.clientEvents = {};
 		this.clientEvents['connect'] = this.onConnect.bind(this);
 		this.clientEvents['message'] = this.message.bind(this);
-		this.client  = mqtt.connect(this.data.broker);
-		
+		this.client  = mqtt.connect( this.data.broker,{username: this.data.username, password: this.data.password});
 		for (var key in this.clientEvents) {
 			if (this.clientEvents.hasOwnProperty(key)) {
 				this.addClientListener(key);
@@ -152,6 +178,8 @@ AFRAME.registerComponent('mqtt-publish', {
   schema: {
       broker: { default: 'mqtt://test.mosquitto.org:8081' },
       topic: { default: 'topic' },
+      username: {type: 'string', default: ''},
+      password: {type: 'string', default: ''},
       message: { default: '' },
 	  active: { default: true },
 	  autoRemove: { default: false }
@@ -162,7 +190,7 @@ AFRAME.registerComponent('mqtt-publish', {
   init: function () {
 	this.clientEvents = {};
 	this.clientEvents['connect'] = this.onConnect.bind(this);
-	this.client  = mqtt.connect(this.data.broker);
+	this.client  = mqtt.connect( this.data.broker, {username: this.data.username, password: this.data.password} );
 
 	for (var key in this.clientEvents) {
 		if (this.clientEvents.hasOwnProperty(key)) {
